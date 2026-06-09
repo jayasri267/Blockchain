@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DocChain — NIC Bhubaneswar</title>
+<link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="logo-dot"></div>DOCCHAIN</div>
+  <div class="hdr-r">
+    <div id="walletBadge">
+      <span id="netBadge">—</span>
+      <span class="addr-chip" id="addrChip" title="">0x0000…0000</span>
+    </div>
+    <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+  </div>
+</header>
+
+<div class="layout">
+<nav>
+  <div class="nav-sect">Overview</div>
+  <div class="nav-item active" id="nav-dashboard" onclick="go('dashboard')"><span class="nav-icon">◈</span>Dashboard</div>
+  <div class="nav-item" id="nav-docs" onclick="go('docs');loadDocs()"><span class="nav-icon">◫</span>All Documents</div>
+
+  <div class="nav-sect">Actions</div>
+  <div class="nav-item" id="nav-upload"  onclick="go('upload')"><span class="nav-icon">↑</span>Upload Document</div>
+  <div class="nav-item" id="nav-forward" onclick="go('forward')"><span class="nav-icon">→</span>Forward Document</div>
+  <div class="nav-item" id="nav-ar"      onclick="go('ar')"><span class="nav-icon">✓</span>Approve / Reject</div>
+  <div class="nav-item" id="nav-verify"  onclick="go('verify')"><span class="nav-icon">★</span>Mark Verified</div>
+
+  <div class="nav-sect">Security</div>
+  <div class="nav-item" id="nav-tamper" onclick="go('tamper')"><span class="nav-icon">◎</span>Tamper Detection</div>
+  <div class="nav-item" id="nav-audit"  onclick="go('audit')"><span class="nav-icon">≡</span>Audit Trail</div>
+
+  <div class="nav-sect">Accounts</div>
+  <div class="nav-item" id="nav-switcher" onclick="go('switcher')"><span class="nav-icon">⇄</span>Account Switcher</div>
+</nav>
+
+<main>
+
+<!-- ── DASHBOARD ── -->
+<div class="page active" id="pg-dashboard">
+  <div class="pg-hdr">
+    <div class="pg-title">Dashboard</div>
+    <div class="pg-sub">// NIC BHUBANESWAR — BLOCKCHAIN DOCUMENT CIRCULATION SYSTEM</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-lbl">Documents</div>
+      <div class="stat-val" id="statDocs" style="color:var(--accent)">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">Network</div>
+      <div class="stat-val" id="statNet" style="font-size:.85rem;color:var(--green);padding-top:6px">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">Contract</div>
+      <div class="stat-val stat-sm" id="statContract">Not set</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">Your Wallet</div>
+      <div class="stat-val stat-sm" id="statAddr" style="color:var(--muted)">Not connected</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">▶ Step 1 — Connect Contract</div>
+    <div class="ib ib-b" style="margin-bottom:1rem">
+      ℹ Ganache CLI → <b>port 8545, chain 1337</b><br>
+      MetaMask (Edge) → RPC: <b>http://127.0.0.1:8545</b> · Chain ID: <b>1337</b><br>
+      Remix → Environment: <b>Dev - Ganache Provider</b> → RPC: http://127.0.0.1:8545 → Deploy DocChain.sol → paste address below
+    </div>
+    <div class="fg">
+      <label>Contract Address (from Remix)</label>
+      <input type="text" id="contractInput" placeholder="0x… paste address from Remix Deployed Contracts"/>
+    </div>
+    <button class="btn bp" onclick="setContract()">▶ Connect to Contract</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Workflow — Anyone Can Do Everything</div>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-num">STEP 1</div><div class="step-txt">Any account uploads a document. File saved on server. SHA256 hash stored on blockchain.</div></div>
+      <div class="step-card"><div class="step-num">STEP 2</div><div class="step-txt">Uploader or anyone forwards the document to another wallet address.</div></div>
+      <div class="step-card"><div class="step-num">STEP 3</div><div class="step-txt">Any connected account approves or rejects the document with a reason.</div></div>
+      <div class="step-card"><div class="step-num">STEP 4</div><div class="step-txt">Anyone marks the document as Verified after approval. Recorded permanently.</div></div>
+      <div class="step-card"><div class="step-num">STEP 5</div><div class="step-txt">Anyone uploads any version of the file. Server + blockchain compare hashes → Authentic or Tampered.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ALL DOCUMENTS ── -->
+<div class="page" id="pg-docs">
+  <div class="pg-hdr"><div class="pg-title">All Documents</div><div class="pg-sub">// EVERY DOCUMENT ON THE BLOCKCHAIN</div></div>
+  <div class="card">
+    <div class="card-title">Document Registry</div>
+    <button class="btn bp" onclick="loadDocs()" style="margin-bottom:1.2rem">↻ Refresh</button>
+    <div id="docsWrap"><div class="empty">Connect wallet and contract, then click Refresh.</div></div>
+  </div>
+</div>
+
+<!-- ── UPLOAD ── -->
+<div class="page" id="pg-upload">
+  <div class="pg-hdr"><div class="pg-title">Upload Document</div><div class="pg-sub">// ANYONE CAN UPLOAD — FILE SAVED LOCALLY, HASH ON BLOCKCHAIN</div></div>
+  <div class="card">
+    <div class="card-title">Upload New Document</div>
+    <div class="ib ib-b">
+      ℹ File → saved to <code>/uploads</code> on server<br>
+      SHA256 hash → computed by Node.js, stored in <code>/hashes</code> AND on blockchain<br>
+      Metadata (title, hash, size, type) → written on blockchain via MetaMask
+    </div>
+    <div class="fg"><label>Document Title</label><input type="text" id="upTitle" placeholder="e.g. Budget Request March 2024"/></div>
+    <div class="fg"><label>Select File</label><input type="file" id="upFile"/></div>
+    <div class="fg"><label>Note (optional)</label><input type="text" id="upNote" placeholder="Brief remark…"/></div>
+    <div class="btn-row">
+      <button class="btn bp" onclick="uploadDocument()">↑ Upload &nbsp;<div class="spinner" id="spinUp"></div></button>
+    </div>
+    <div class="res-box" id="upRes"></div>
+  </div>
+</div>
+
+<!-- ── FORWARD ── -->
+<div class="page" id="pg-forward">
+  <div class="pg-hdr"><div class="pg-title">Forward Document</div><div class="pg-sub">// ANYONE CAN FORWARD TO ANY ADDRESS</div></div>
+  <div class="card">
+    <div class="card-title">Forward</div>
+    <div class="ib ib-o">⚠ You can forward any document to any address. The recipient becomes the new holder.</div>
+    <div class="fg"><label>Document ID</label><input type="number" id="fwdId" placeholder="e.g. 1" min="1"/></div>
+    <div class="fg"><label>Forward To — Wallet Address</label><input type="text" id="fwdTo" placeholder="0x… copy from Account Switcher"/></div>
+    <div class="fg"><label>Note</label><input type="text" id="fwdNote" placeholder="e.g. Please review and approve"/></div>
+    <div class="btn-row">
+      <button class="btn bw" onclick="forwardDoc()">→ Forward &nbsp;<div class="spinner" id="spinFwd"></div></button>
+    </div>
+    <div class="res-box" id="fwdRes"></div>
+  </div>
+</div>
+
+<!-- ── APPROVE / REJECT ── -->
+<div class="page" id="pg-ar">
+  <div class="pg-hdr"><div class="pg-title">Approve / Reject</div><div class="pg-sub">// ANYONE CAN APPROVE OR REJECT ANY DOCUMENT</div></div>
+  <div class="card">
+    <div class="card-title">Decision</div>
+    <div class="ib ib-g">✓ Any connected wallet can approve or reject. No role restriction.</div>
+    <div class="fg"><label>Document ID</label><input type="number" id="arId" placeholder="e.g. 1" min="1"/></div>
+    <div class="fg"><label>Note / Reason (required for rejection)</label><input type="text" id="arNote" placeholder="Your observation or reason…"/></div>
+    <div class="btn-row">
+      <button class="btn bg" onclick="approveDoc()">✓ Approve &nbsp;<div class="spinner" id="spinAR"></div></button>
+      <button class="btn br" onclick="rejectDoc()">✕ Reject</button>
+    </div>
+    <div class="res-box" id="arRes"></div>
+  </div>
+</div>
+
+<!-- ── VERIFY ── -->
+<div class="page" id="pg-verify">
+  <div class="pg-hdr"><div class="pg-title">Mark as Verified</div><div class="pg-sub">// ANYONE CAN MARK A DOCUMENT AS VERIFIED</div></div>
+  <div class="card">
+    <div class="card-title">Verify Document</div>
+    <div class="ib ib-b">ℹ This marks the document status as <b>Verified</b> on the blockchain permanently.</div>
+    <div class="fg"><label>Document ID</label><input type="number" id="verifyId" placeholder="e.g. 1" min="1"/></div>
+    <div class="fg"><label>Note</label><input type="text" id="verifyNote" placeholder="Verification note…"/></div>
+    <div class="btn-row">
+      <button class="btn bp" onclick="verifyOnChain()">◎ Mark Verified &nbsp;<div class="spinner" id="spinVerify"></div></button>
+    </div>
+    <div class="res-box" id="verifyRes"></div>
+  </div>
+</div>
+
+<!-- ── TAMPER DETECTION ── -->
+<div class="page" id="pg-tamper">
+  <div class="pg-hdr"><div class="pg-title">Tamper Detection</div><div class="pg-sub">// UPLOAD ANY FILE VERSION — DETECT IF IT WAS MODIFIED</div></div>
+  <div class="card">
+    <div class="card-title">Check File Integrity</div>
+    <div class="ib ib-b">
+      ℹ How it works:<br>
+      1. You upload any version of the file here<br>
+      2. Node.js computes its SHA256 hash<br>
+      3. Compared with the original hash stored at upload time<br>
+      4. Blockchain also independently confirms the result<br>
+      5. Even <b style="color:var(--red)">one character changed</b> = completely different hash = <b style="color:var(--red)">TAMPERED</b>
+    </div>
+    <div class="fg"><label>Document ID</label><input type="number" id="tamId" placeholder="e.g. 1" min="1"/></div>
+    <div class="fg"><label>Upload File to Check</label><input type="file" id="tamFile"/></div>
+    <div class="btn-row">
+      <button class="btn bp" onclick="checkTamper()">◎ Check Integrity &nbsp;<div class="spinner" id="spinTam"></div></button>
+    </div>
+    <div class="tamper-box" id="tamBox"></div>
+  </div>
+</div>
+
+<!-- ── AUDIT TRAIL ── -->
+<div class="page" id="pg-audit">
+  <div class="pg-hdr"><div class="pg-title">Audit Trail</div><div class="pg-sub">// IMMUTABLE HISTORY — PERMANENT ON BLOCKCHAIN, CANNOT BE CHANGED</div></div>
+  <div class="card">
+    <div class="card-title">Load Document History</div>
+    <div class="form-row">
+      <div class="fg"><label>Document ID</label><input type="number" id="auditId" placeholder="e.g. 1" min="1"/></div>
+      <div class="fg" style="display:flex;align-items:flex-end">
+        <button class="btn bp" onclick="loadAudit()">≡ Load Audit Trail</button>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="auditCard" style="display:none">
+    <div class="card-title">Complete History</div>
+    <div id="auditWrap"></div>
+  </div>
+</div>
+
+<!-- ── ACCOUNT SWITCHER ── -->
+<div class="page" id="pg-switcher">
+  <div class="pg-hdr"><div class="pg-title">Account Switcher</div><div class="pg-sub">// ALL GANACHE ACCOUNTS — SWITCH IN METAMASK TO ACT AS DIFFERENT USERS</div></div>
+  <div class="card">
+    <div class="card-title">How to Switch Accounts</div>
+    <div class="ib ib-b">
+      1. Click <b>MetaMask icon</b> in Edge extensions bar<br>
+      2. Click the <b>account circle</b> at top right of MetaMask<br>
+      3. Select any Ganache account<br>
+      4. App detects switch automatically — no refresh needed<br>
+      5. Copy addresses from table below to use in Forward / other actions
+    </div>
+    <button class="btn bp" onclick="loadAccts()">⇄ Load Accounts</button>
+  </div>
+  <div class="card" id="switchCard">
+    <div class="card-title">Ganache CLI Accounts</div>
+    <div style="display:grid;grid-template-columns:28px 90px 1fr 60px;gap:10px;padding:6px 8px;font-family:var(--mono);font-size:.58rem;color:var(--muted);border-bottom:1px solid var(--border)">
+      <span>#</span><span>SHORT</span><span>FULL ADDRESS</span><span></span>
+    </div>
+    <div id="accList"></div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<div id="toast"><span id="toastIcon">◈</span><span id="toastMsg">Ready</span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script src="/js/contract.js"></script>
+<script src="/js/app.js"></script>
+<script>
+  // Sync stat-net with netBadge
+  window.addEventListener('load', () => {
+    const nb = document.getElementById('netBadge');
+    const sn = document.getElementById('statNet');
+    const obs = new MutationObserver(() => { if(sn) sn.textContent = nb.textContent; });
+    obs.observe(nb, { childList:true, characterData:true, subtree:true });
+  });
+</script>
+</body>
+</html>
