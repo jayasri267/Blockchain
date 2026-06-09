@@ -1,4 +1,4 @@
-# DocChain — NIC Bhubaneswar
+
 ## Blockchain Document Circulation System
 ### Anyone can upload, forward, approve, reject, verify
 
